@@ -95,3 +95,4 @@ d:\ASP_NET_CORE\CustomHome\obj\Debug\net10.0\refint\CustomHome.dll
 d:\ASP_NET_CORE\CustomHome\obj\Debug\net10.0\CustomHome.pdb
 d:\ASP_NET_CORE\CustomHome\obj\Debug\net10.0\CustomHome.genruntimeconfig.cache
 d:\ASP_NET_CORE\CustomHome\obj\Debug\net10.0\ref\CustomHome.dll
+d:\ASP_NET_CORE\CustomHome\obj\Debug\net10.0\CustomHome.sourcelink.json

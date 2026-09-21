@@ -1,10 +1,24 @@
-﻿@model CustomHome.Models.HomeViewModel
+﻿@model Queue<int>
 
 @{
-    ViewData["Title"] = "Custom IIS Home";
+    ViewData["Title"] = "Service Station";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Custom IIS Home</h1>
-    <p class="display-4">Token: @Model.Token</p>
+    <h1 class="display-4">Service Station</h1>
+
+    <form method="post" action="/Home/GetToken">
+        <button class="btn-primary" type="submit">Get Token</button>
+    </form>
+
+    <form method="post" action="/Home/ServeNext">
+        <button class="btn-primary" type="submit">Serve Next Customer</button>
+    </form>
+
+    <p class="display-6">Waiting customers: @Model.Count</p>
+    
+    @foreach (var token in Model)
+    {
+        <p class="display-6">Token: @token</p>
+    }
 </div>

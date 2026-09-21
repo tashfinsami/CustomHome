@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj": {}
+    "d:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj": {}
   },
   "projects": {
-    "D:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj": {
+    "d:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj",
+        "projectUniqueName": "d:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj",
         "projectName": "CustomHome",
-        "projectPath": "D:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj",
+        "projectPath": "d:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj",
         "packagesPath": "C:\\Users\\tashf\\.nuget\\packages\\",
-        "outputPath": "D:\\ASP_NET_CORE\\CustomHome\\obj\\",
+        "outputPath": "d:\\ASP_NET_CORE\\CustomHome\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\tashf\\AppData\\Roaming\\NuGet\\NuGet.Config"

@@ -6,14 +6,33 @@ namespace CustomHome.Controllers;
 
 public class HomeController : Controller
 {
+    private static Queue<int> tokens = new Queue<int>();
+
     public IActionResult Index()
     {
-        var model = new HomeViewModel
-        {
-            Token = Random.Shared.Next(100000, 999999)
-        };
+        return View(tokens);
+    }
 
-    return View(model);
+    [HttpPost]
+    public IActionResult GetToken()
+    {
+        if (tokens.Count < 5)
+        {
+            tokens.Enqueue(Random.Shared.Next(100000, 999999));
+        }
+
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    public IActionResult ServeNext()
+    {
+        if (tokens.Count > 0)
+        {
+            tokens.Dequeue();
+        }
+
+        return RedirectToAction("Index");
     }
 
     public IActionResult Privacy()
