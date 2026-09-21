@@ -6,7 +6,7 @@ namespace CustomHome.Controllers;
 
 public class HomeController : Controller
 {
-    private static Queue<int> tokens = new Queue<int>();
+    private static Queue<ServiceToken> tokens = new Queue<ServiceToken>();
 
     public IActionResult Index()
     {
@@ -18,7 +18,11 @@ public class HomeController : Controller
     {
         if (tokens.Count < 5)
         {
-            tokens.Enqueue(Random.Shared.Next(100000, 999999));
+            tokens.Enqueue(new ServiceToken
+            {
+                TokenNumber = Random.Shared.Next(100000, 999999),
+                Status = "Waiting"
+            });
         }
 
         return RedirectToAction("Index");

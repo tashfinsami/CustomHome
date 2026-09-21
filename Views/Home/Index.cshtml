@@ -1,4 +1,4 @@
-﻿@model Queue<int>
+﻿@model Queue<ServiceToken>
 
 @{
     ViewData["Title"] = "Service Station";
@@ -16,9 +16,9 @@
     </form>
 
     <p class="display-6">Waiting customers: @Model.Count</p>
-    
+
     @foreach (var token in Model)
     {
-        <p class="display-6">Token: @token</p>
+        <p class="display-6">Token: @token.TokenNumber</p>
     }
 </div>
