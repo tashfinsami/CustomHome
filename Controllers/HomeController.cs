@@ -60,16 +60,22 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult ServeNext()
     {
-        var token = _context.ServiceTokens
-        .Where(t => t.Status == "Waiting")
-        .OrderBy(t => t.CreatedAt)
-        .FirstOrDefault();
+        var servingCount = _context.ServiceTokens
+        .Count(t => t.Status == "Serving");
 
-        if (token != null)
+        if (servingCount < 2)
         {
-            token.Status = "Serving";
+            var token = _context.ServiceTokens
+                .Where(t => t.Status == "Waiting")
+                .OrderBy(t => t.CreatedAt)
+                .FirstOrDefault();
 
-            _context.SaveChanges();
+            if (token != null)
+            {
+                token.Status = "Serving";
+
+                _context.SaveChanges();
+            }
         }
 
         return RedirectToAction("Index");

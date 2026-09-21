@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj": {}
+    "D:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj": {}
   },
   "projects": {
-    "d:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj": {
+    "D:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj",
+        "projectUniqueName": "D:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj",
         "projectName": "CustomHome",
-        "projectPath": "d:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj",
+        "projectPath": "D:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj",
         "packagesPath": "C:\\Users\\tashf\\.nuget\\packages\\",
-        "outputPath": "d:\\ASP_NET_CORE\\CustomHome\\obj\\",
+        "outputPath": "D:\\ASP_NET_CORE\\CustomHome\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\tashf\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -49,6 +49,12 @@
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.20, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.0, )"
             },
             "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
