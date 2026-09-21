@@ -1,0 +1,7 @@
+d:\ASP_NET_CORE\CustomHome\bin\Release\net10.0\publish\CustomHome.exe
+d:\ASP_NET_CORE\CustomHome\bin\Release\net10.0\publish\appsettings.Development.json
+d:\ASP_NET_CORE\CustomHome\bin\Release\net10.0\publish\appsettings.json
+d:\ASP_NET_CORE\CustomHome\bin\Release\net10.0\publish\CustomHome.dll
+d:\ASP_NET_CORE\CustomHome\bin\Release\net10.0\publish\CustomHome.deps.json
+d:\ASP_NET_CORE\CustomHome\bin\Release\net10.0\publish\CustomHome.runtimeconfig.json
+d:\ASP_NET_CORE\CustomHome\bin\Release\net10.0\publish\CustomHome.pdb
