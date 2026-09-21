@@ -17,13 +17,9 @@
 
     <h2 class="display-5">Now Serving</h2>
 
-    @if (Model.ServingToken != null)
+    @foreach (var token in Model.ServingTokens)
     {
-        <p class="display-6">Token: @Model.ServingToken.TokenNumber</p>
-    }
-    else
-    {
-        <p class="display-6">No customer is currently being served.</p>
+        <p class="display-6">Token: @token.TokenNumber</p>
     }
 
     <h2 class="display-5">Waiting Customers</h2>

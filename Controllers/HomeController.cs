@@ -16,28 +16,23 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        var tokens = _context.ServiceTokens
-        .Where(t => t.Status == "Waiting")
-        .OrderBy(t => t.CreatedAt)
-        .ToList();
-
         var waitingTokens = _context.ServiceTokens
         .Where(t => t.Status == "Waiting")
         .OrderBy(t => t.CreatedAt)
         .ToList();
 
-        var servingToken = _context.ServiceTokens
-            .FirstOrDefault(t => t.Status == "Serving");
+        var servingTokens = _context.ServiceTokens
+        .Where(t => t.Status == "Serving")
+        .OrderBy(t => t.CreatedAt)
+        .ToList();
 
         var model = new HomeViewModel
         {
             WaitingTokens = waitingTokens,
-            ServingToken = servingToken
+            ServingTokens = servingTokens
         };
-
-    return View(model);
-
-        return View(tokens);
+        
+        return View(model);
     }
 
     [HttpPost]
