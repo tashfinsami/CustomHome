@@ -75,6 +75,24 @@ public class HomeController : Controller
         return RedirectToAction("Index");
     }
 
+    [HttpPost]
+    public IActionResult CompleteCurrent()
+    {
+        var token = _context.ServiceTokens
+            .Where(t => t.Status == "Serving")
+            .OrderBy(t => t.CreatedAt)
+            .FirstOrDefault();
+
+        if (token != null)
+        {
+            token.Status = "Completed";
+
+            _context.SaveChanges();
+        }
+
+        return RedirectToAction("Index");
+    }
+
     public IActionResult Privacy()
     {
         return View();
