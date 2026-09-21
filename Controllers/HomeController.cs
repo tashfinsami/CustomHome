@@ -38,10 +38,12 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult GetToken()
     {
+        var settings = _context.QueueSettings.First();
+        
         var waitingCount = _context.ServiceTokens
         .Count(t => t.Status == "Waiting");
 
-        if (waitingCount < 5)
+        if (waitingCount < settings.MaxWaiting)
         {
             var token = new ServiceToken
             {
@@ -60,10 +62,12 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult ServeNext()
     {
+        var settings = _context.QueueSettings.First();
+
         var servingCount = _context.ServiceTokens
         .Count(t => t.Status == "Serving");
 
-        if (servingCount < 2)
+        if (servingCount < settings.MaxServing)
         {
             var token = _context.ServiceTokens
                 .Where(t => t.Status == "Waiting")

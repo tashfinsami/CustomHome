@@ -4,6 +4,7 @@ using CustomHome.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CustomHome.Migrations
 {
     [DbContext(typeof(ServiceStationContext))]
-    partial class ServiceStationContextModelSnapshot : ModelSnapshot
+    [Migration("20260921125754_AddQueueSettings")]
+    partial class AddQueueSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,14 +42,6 @@ namespace CustomHome.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("QueueSettings");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            MaxServing = 2,
-                            MaxWaiting = 5
-                        });
                 });
 
             modelBuilder.Entity("CustomHome.Models.ServiceToken", b =>

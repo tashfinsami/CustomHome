@@ -11,5 +11,19 @@ namespace CustomHome.Data
         }
 
         public DbSet<ServiceToken> ServiceTokens { get; set; }
+
+        public DbSet<QueueSettings> QueueSettings { get; set; }
+
+         protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<QueueSettings>().HasData(
+                new QueueSettings
+                {
+                    Id = 1,
+                    MaxWaiting = 5,
+                    MaxServing = 2
+                }
+            );
+        }
     }
 }
