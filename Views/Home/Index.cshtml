@@ -1,4 +1,4 @@
-﻿@model Queue<ServiceToken>
+﻿@model HomeViewModel
 
 @{
     ViewData["Title"] = "Service Station";
@@ -15,10 +15,24 @@
         <button class="btn-primary" type="submit">Serve Next Customer</button>
     </form>
 
-    <p class="display-6">Waiting customers: @Model.Count</p>
+    <h2 class="display-5">Now Serving</h2>
 
-    @foreach (var token in Model)
+    @if (Model.ServingToken != null)
+    {
+        <p class="display-6">Token: @Model.ServingToken.TokenNumber</p>
+    }
+    else
+    {
+        <p class="display-6">No customer is currently being served.</p>
+    }
+
+    <h2 class="display-5">Waiting Customers</h2>
+
+    <!-- <p class="display-6">Waiting: @Model.WaitingTokens.Count / 5</p> -->
+
+    @foreach (var token in Model.WaitingTokens)
     {
         <p class="display-6">Token: @token.TokenNumber</p>
     }
+
 </div>

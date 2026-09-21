@@ -1,28 +1,62 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using CustomHome.Data;
 using CustomHome.Models;
 
 namespace CustomHome.Controllers;
 
 public class HomeController : Controller
 {
-    private static Queue<ServiceToken> tokens = new Queue<ServiceToken>();
+    private readonly ServiceStationContext _context;
+
+    public HomeController(ServiceStationContext context)
+    {
+        _context = context;
+    }
 
     public IActionResult Index()
     {
+        var tokens = _context.ServiceTokens
+        .Where(t => t.Status == "Waiting")
+        .OrderBy(t => t.CreatedAt)
+        .ToList();
+
+        var waitingTokens = _context.ServiceTokens
+        .Where(t => t.Status == "Waiting")
+        .OrderBy(t => t.CreatedAt)
+        .ToList();
+
+        var servingToken = _context.ServiceTokens
+            .FirstOrDefault(t => t.Status == "Serving");
+
+        var model = new HomeViewModel
+        {
+            WaitingTokens = waitingTokens,
+            ServingToken = servingToken
+        };
+
+    return View(model);
+
         return View(tokens);
     }
 
     [HttpPost]
     public IActionResult GetToken()
     {
-        if (tokens.Count < 5)
+        var waitingCount = _context.ServiceTokens
+        .Count(t => t.Status == "Waiting");
+
+        if (waitingCount < 5)
         {
-            tokens.Enqueue(new ServiceToken
+            var token = new ServiceToken
             {
                 TokenNumber = Random.Shared.Next(100000, 999999),
-                Status = "Waiting"
-            });
+                Status = "Waiting",
+                CreatedAt = DateTime.Now
+            };
+
+            _context.ServiceTokens.Add(token);
+            _context.SaveChanges();
         }
 
         return RedirectToAction("Index");
@@ -31,9 +65,16 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult ServeNext()
     {
-        if (tokens.Count > 0)
+        var token = _context.ServiceTokens
+        .Where(t => t.Status == "Waiting")
+        .OrderBy(t => t.CreatedAt)
+        .FirstOrDefault();
+
+        if (token != null)
         {
-            tokens.Dequeue();
+            token.Status = "Serving";
+
+            _context.SaveChanges();
         }
 
         return RedirectToAction("Index");

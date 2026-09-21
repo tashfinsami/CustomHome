@@ -1,7 +1,8 @@
-namespace CustomHome.Models
+namespace CustomHome.Models;
+
+public class HomeViewModel
 {
-    public class HomeViewModel
-    {
-        public int Token { get; set; }
-    }
+    public List<ServiceToken> WaitingTokens { get; set; }
+
+    public ServiceToken? ServingToken { get; set; }
 }

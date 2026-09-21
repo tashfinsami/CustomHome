@@ -1,8 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "Jy0P7FRsz5E=",
+  "dgSpecHash": "op6cfeUZGlQ=",
   "success": true,
   "projectFilePath": "d:\\ASP_NET_CORE\\CustomHome\\CustomHome.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\tashf\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.20\\microsoft.entityframeworkcore.9.0.20.nupkg.sha512",
+    "C:\\Users\\tashf\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\9.0.20\\microsoft.entityframeworkcore.abstractions.9.0.20.nupkg.sha512",
+    "C:\\Users\\tashf\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\9.0.20\\microsoft.entityframeworkcore.analyzers.9.0.20.nupkg.sha512",
+    "C:\\Users\\tashf\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\9.0.0\\microsoft.entityframeworkcore.relational.9.0.0.nupkg.sha512",
+    "C:\\Users\\tashf\\.nuget\\packages\\mysqlconnector\\2.4.0\\mysqlconnector.2.4.0.nupkg.sha512",
+    "C:\\Users\\tashf\\.nuget\\packages\\pomelo.entityframeworkcore.mysql\\9.0.0\\pomelo.entityframeworkcore.mysql.9.0.0.nupkg.sha512"
+  ],
   "logs": []
 }
