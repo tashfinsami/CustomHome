@@ -41,28 +41,36 @@ public class HomeController : Controller
     {
         using var transaction = _context.Database.BeginTransaction();
 
-        var settings = _context.QueueSettings
-            .FromSqlRaw(
-                "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE")
-            .First();
-
-        var waitingCount = _context.ServiceTokens
-            .Count(t => t.Status == "Waiting");
-
-        if (waitingCount < settings.MaxWaiting)
+        try
         {
-            var token = new ServiceToken
+            var settings = _context.QueueSettings
+                .FromSqlRaw(
+                    "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE")
+                .First();
+
+            var waitingCount = _context.ServiceTokens
+                .Count(t => t.Status == "Waiting");
+
+            if (waitingCount < settings.MaxWaiting)
             {
-                TokenNumber = Random.Shared.Next(100000, 999999),
-                Status = "Waiting",
-                CreatedAt = DateTime.Now
-            };
+                var token = new ServiceToken
+                {
+                    TokenNumber = Random.Shared.Next(100000, 999999),
+                    Status = "Waiting",
+                    CreatedAt = DateTime.Now
+                };
 
-            _context.ServiceTokens.Add(token);
-            _context.SaveChanges();
+                _context.ServiceTokens.Add(token);
+                _context.SaveChanges();
+            }
+
+            transaction.Commit();
         }
-
-        transaction.Commit();
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
 
         return RedirectToAction("Index");
     }
@@ -70,24 +78,39 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult ServeNext()
     {
-        var settings = _context.QueueSettings.First();
+        using var transaction = _context.Database.BeginTransaction();
 
-        var servingCount = _context.ServiceTokens
-        .Count(t => t.Status == "Serving");
-
-        if (servingCount < settings.MaxServing)
+        try
         {
-            var token = _context.ServiceTokens
-                .Where(t => t.Status == "Waiting")
-                .OrderBy(t => t.CreatedAt)
-                .FirstOrDefault();
+            var settings = _context.QueueSettings
+                .FromSqlRaw(
+                    "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE")
+                .First();
 
-            if (token != null)
+            var servingCount = _context.ServiceTokens
+                .Count(t => t.Status == "Serving");
+
+            if (servingCount < settings.MaxServing)
             {
-                token.Status = "Serving";
+                var token = _context.ServiceTokens
+                    .Where(t => t.Status == "Waiting")
+                    .OrderBy(t => t.CreatedAt)
+                    .FirstOrDefault();
 
-                _context.SaveChanges();
+                if (token != null)
+                {
+                    token.Status = "Serving";
+
+                    _context.SaveChanges();
+                }
             }
+
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
         }
 
         return RedirectToAction("Index");
@@ -96,16 +119,33 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult CompleteCurrent()
     {
-        var token = _context.ServiceTokens
-            .Where(t => t.Status == "Serving")
-            .OrderBy(t => t.CreatedAt)
-            .FirstOrDefault();
+        using var transaction = _context.Database.BeginTransaction(); // not absolutely necessary here, but added for consistency
 
-        if (token != null)
+        try
         {
-            token.Status = "Completed";
+            var settings = _context.QueueSettings
+                .FromSqlRaw(
+                    "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE") // used only to lock the row for concurrency control
+                .First();
 
-            _context.SaveChanges();
+            var token = _context.ServiceTokens
+                .Where(t => t.Status == "Serving")
+                .OrderBy(t => t.CreatedAt)
+                .FirstOrDefault();
+
+            if (token != null)
+            {
+                token.Status = "Completed";
+
+                _context.SaveChanges();
+            }
+
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
         }
 
         return RedirectToAction("Index");

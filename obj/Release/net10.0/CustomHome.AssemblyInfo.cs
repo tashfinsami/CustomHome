@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CustomHome")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+232be7211b91133ab45a05343f39dd0ce9cf2954")]
 [assembly: System.Reflection.AssemblyProductAttribute("CustomHome")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CustomHome")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
