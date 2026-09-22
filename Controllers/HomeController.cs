@@ -117,7 +117,7 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public IActionResult CompleteCurrent()
+    public IActionResult CompleteCurrent(int id)
     {
         using var transaction = _context.Database.BeginTransaction(); // not absolutely necessary here, but added for consistency
 
@@ -129,9 +129,7 @@ public class HomeController : Controller
                 .First();
 
             var token = _context.ServiceTokens
-                .Where(t => t.Status == "Serving")
-                .OrderBy(t => t.CreatedAt)
-                .FirstOrDefault();
+                .FirstOrDefault(t => t.Id == id && t.Status == "Serving");
 
             if (token != null)
             {

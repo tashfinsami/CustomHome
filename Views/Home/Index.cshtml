@@ -15,15 +15,24 @@
         <button class="btn-primary" type="submit">Serve Next</button>
     </form>
 
-    <form method="post" action="/Home/CompleteCurrent">
+    <!-- <form method="post" action="/Home/CompleteCurrent">
         <button class="btn-primary" type="submit">Complete Current</button>
-    </form>
+    </form> -->
 
     <h2 class="display-5">Now Serving</h2>
 
     @foreach (var token in Model.ServingTokens)
     {
-        <p class="display-6">Token: @token.TokenNumber</p>
+        <!-- <p class="display-6">Token: @token.TokenNumber</p> -->
+
+        <div>
+            <span class="display-6">Token: @token.TokenNumber</span>
+
+            <form method="post" action="/Home/CompleteCurrent" style="display: inline;">
+                <input type="hidden" name="id" value="@token.Id" />
+                <button class="btn-primary" type="submit">Complete</button>
+            </form>
+        </div>
     }
 
     <h2 class="display-5">Waiting Customers</h2>
