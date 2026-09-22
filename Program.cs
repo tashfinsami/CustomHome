@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using CustomHome.Data;
+using CustomHome.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<QueueService>();
 
 builder.Services.AddDbContext<ServiceStationContext>(options =>
     options.UseMySql(
