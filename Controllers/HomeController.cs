@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using CustomHome.Data;
 using CustomHome.Models;
 
@@ -38,10 +39,15 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult GetToken()
     {
-        var settings = _context.QueueSettings.First();
-        
+        using var transaction = _context.Database.BeginTransaction();
+
+        var settings = _context.QueueSettings
+            .FromSqlRaw(
+                "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE")
+            .First();
+
         var waitingCount = _context.ServiceTokens
-        .Count(t => t.Status == "Waiting");
+            .Count(t => t.Status == "Waiting");
 
         if (waitingCount < settings.MaxWaiting)
         {
@@ -55,6 +61,8 @@ public class HomeController : Controller
             _context.ServiceTokens.Add(token);
             _context.SaveChanges();
         }
+
+        transaction.Commit();
 
         return RedirectToAction("Index");
     }
