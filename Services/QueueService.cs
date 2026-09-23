@@ -15,14 +15,9 @@ namespace CustomHome.Services
 
         public void GetToken()
         {
-            using var transaction = _context.Database.BeginTransaction();
-
-            try
+            ExecuteWithQueueLock(() =>
             {
-                var settings = _context.QueueSettings
-                    .FromSqlRaw(
-                        "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE")
-                    .First();
+                var settings = _context.QueueSettings.First(); // though not using FOR UPDATE here, part of same transaction locked by FOR UPDATE queary in ExecuteWithQueueLock
 
                 var waitingCount = _context.ServiceTokens
                     .Count(t => t.Status == "Waiting");
@@ -39,26 +34,14 @@ namespace CustomHome.Services
                     _context.ServiceTokens.Add(token);
                     _context.SaveChanges();
                 }
-
-                transaction.Commit();
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
+            });
         }
 
         public void ServeNext()
         {
-            using var transaction = _context.Database.BeginTransaction();
-
-            try
+            ExecuteWithQueueLock(() =>
             {
-                var settings = _context.QueueSettings
-                    .FromSqlRaw(
-                        "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE")
-                    .First();
+                var settings = _context.QueueSettings.First(); // though not using FOR UPDATE here, part of same transaction locked by FOR UPDATE queary in ExecuteWithQueueLock
 
                 var servingCount = _context.ServiceTokens
                     .Count(t => t.Status == "Serving");
@@ -76,27 +59,13 @@ namespace CustomHome.Services
                         _context.SaveChanges();
                     }
                 }
-
-                transaction.Commit();
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
+            });
         }
 
         public void Complete(int id)
         {
-            using var transaction = _context.Database.BeginTransaction(); // not absolutely necessary here, but added for consistency
-
-            try
+            ExecuteWithQueueLock(() =>
             {
-                var settings = _context.QueueSettings
-                    .FromSqlRaw(
-                        "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE") // used only to lock the row for concurrency control
-                    .First();
-
                 var token = _context.ServiceTokens
                     .FirstOrDefault(t =>
                         t.Id == id &&
@@ -107,6 +76,21 @@ namespace CustomHome.Services
                     token.Status = "Completed";
                     _context.SaveChanges();
                 }
+            });
+        }
+
+        private void ExecuteWithQueueLock(Action action)
+        {
+            using var transaction = _context.Database.BeginTransaction();
+
+            try
+            {
+                _context.QueueSettings
+                    .FromSqlRaw(
+                        "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE") // used for locking
+                    .First();
+
+                action();
 
                 transaction.Commit();
             }
