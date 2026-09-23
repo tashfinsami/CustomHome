@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CustomHome.Data;
 using CustomHome.Models;
 using CustomHome.Services;
 
@@ -9,27 +7,17 @@ namespace CustomHome.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ServiceStationContext _context;
     private readonly QueueService _queueService;
 
-    public HomeController(ServiceStationContext context,
-        QueueService queueService)
+    public HomeController(QueueService queueService)
     {
-        _context = context;
         _queueService = queueService;
     }
 
     public IActionResult Index()
     {
-        var waitingTokens = _context.ServiceTokens
-        .Where(t => t.Status == "Waiting")
-        .OrderBy(t => t.CreatedAt)
-        .ToList();
-
-        var servingTokens = _context.ServiceTokens
-        .Where(t => t.Status == "Serving")
-        .OrderBy(t => t.CreatedAt)
-        .ToList();
+        var waitingTokens = _queueService.GetWaitingTokens();
+        var servingTokens = _queueService.GetServingTokens();
 
         var model = new HomeViewModel
         {

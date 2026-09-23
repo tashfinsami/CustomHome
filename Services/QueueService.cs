@@ -79,6 +79,22 @@ namespace CustomHome.Services
             });
         }
 
+        public List<ServiceToken> GetWaitingTokens() // reading operation, no need for transaction and locking
+        {
+            return _context.ServiceTokens
+                .Where(t => t.Status == "Waiting")
+                .OrderBy(t => t.CreatedAt)
+                .ToList();
+        }
+
+        public List<ServiceToken> GetServingTokens() // reading operation, no need for transaction and locking
+        {
+            return _context.ServiceTokens
+                .Where(t => t.Status == "Serving")
+                .OrderBy(t => t.CreatedAt)
+                .ToList();
+        }
+
         private void ExecuteWithQueueLock(Action action)
         {
             using var transaction = _context.Database.BeginTransaction();
