@@ -20,14 +20,14 @@ namespace CustomHome.Services
                 var settings = _context.QueueSettings.First(); // though not using FOR UPDATE here, part of same transaction locked by FOR UPDATE queary in ExecuteWithQueueLock
 
                 var waitingCount = _context.ServiceTokens
-                    .Count(t => t.Status == "Waiting");
+                    .Count(t => t.Status == ServiceTokenStatus.Waiting);
 
                 if (waitingCount < settings.MaxWaiting)
                 {
                     var token = new ServiceToken
                     {
-                        TokenNumber = Random.Shared.Next(100000, 999999),
-                        Status = "Waiting",
+                        TokenNumber = GenerateUniqueTokenNumber(),
+                        Status = ServiceTokenStatus.Waiting,
                         CreatedAt = DateTime.Now
                     };
 
@@ -44,18 +44,18 @@ namespace CustomHome.Services
                 var settings = _context.QueueSettings.First(); // though not using FOR UPDATE here, part of same transaction locked by FOR UPDATE queary in ExecuteWithQueueLock
 
                 var servingCount = _context.ServiceTokens
-                    .Count(t => t.Status == "Serving");
+                    .Count(t => t.Status == ServiceTokenStatus.Serving);
 
                 if (servingCount < settings.MaxServing)
                 {
                     var token = _context.ServiceTokens
-                        .Where(t => t.Status == "Waiting")
+                        .Where(t => t.Status == ServiceTokenStatus.Waiting)
                         .OrderBy(t => t.CreatedAt)
                         .FirstOrDefault();
 
                     if (token != null)
                     {
-                        token.Status = "Serving";
+                        token.Status = ServiceTokenStatus.Serving;
                         _context.SaveChanges();
                     }
                 }
@@ -69,11 +69,11 @@ namespace CustomHome.Services
                 var token = _context.ServiceTokens
                     .FirstOrDefault(t =>
                         t.Id == id &&
-                        t.Status == "Serving");
+                        t.Status == ServiceTokenStatus.Serving);
 
                 if (token != null)
                 {
-                    token.Status = "Completed";
+                    token.Status = ServiceTokenStatus.Completed;
                     _context.SaveChanges();
                 }
             });
@@ -82,7 +82,7 @@ namespace CustomHome.Services
         public List<ServiceToken> GetWaitingTokens() // reading operation, no need for transaction and locking
         {
             return _context.ServiceTokens
-                .Where(t => t.Status == "Waiting")
+                .Where(t => t.Status == ServiceTokenStatus.Waiting)
                 .OrderBy(t => t.CreatedAt)
                 .ToList();
         }
@@ -90,9 +90,23 @@ namespace CustomHome.Services
         public List<ServiceToken> GetServingTokens() // reading operation, no need for transaction and locking
         {
             return _context.ServiceTokens
-                .Where(t => t.Status == "Serving")
+                .Where(t => t.Status == ServiceTokenStatus.Serving)
                 .OrderBy(t => t.CreatedAt)
                 .ToList();
+        }
+
+        private int GenerateUniqueTokenNumber() // generally not needed as 100000 - 999999 is a large range
+        {
+            int tokenNumber;
+
+            do
+            {
+                tokenNumber = Random.Shared.Next(100000, 999999);
+            }
+            while (_context.ServiceTokens
+                .Any(t => t.TokenNumber == tokenNumber));
+
+            return tokenNumber;
         }
 
         private void ExecuteWithQueueLock(Action action)

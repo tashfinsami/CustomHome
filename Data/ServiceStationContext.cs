@@ -16,6 +16,14 @@ namespace CustomHome.Data
 
          protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<ServiceToken>() // Configure the ServiceToken entity to store the Status enum as a string in the database
+                .Property(t => t.Status)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<ServiceToken>() // enforce unique constraint on TokenNumber
+                .HasIndex(t => t.TokenNumber)
+                .IsUnique();
+
             modelBuilder.Entity<QueueSettings>().HasData(
                 new QueueSettings
                 {

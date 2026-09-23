@@ -6,7 +6,7 @@ namespace CustomHome.Models
 
         public int TokenNumber { get; set; }
 
-        public string Status { get; set; }
+        public ServiceTokenStatus Status { get; set; }
 
         public DateTime CreatedAt { get; set; }
     }
