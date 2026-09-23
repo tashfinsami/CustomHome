@@ -13,14 +13,15 @@ namespace CustomHome.Services
             _context = context;
         }
 
-        public QueueOperationResult GetToken()
+        public QueueOperationResponse GetToken()
         {
-            var result = QueueOperationResult.QueueFull;
-
-            ExecuteWithQueueLock(() =>
+            var response = new QueueOperationResponse
             {
-                var settings = _context.QueueSettings.First(); // though not using FOR UPDATE here, part of same transaction locked by FOR UPDATE queary in ExecuteWithQueueLock
+                Result = QueueOperationResult.QueueFull
+            };
 
+            ExecuteWithQueueLock(settings =>
+            {
                 var waitingCount = _context.ServiceTokens
                     .Count(t => t.Status == ServiceTokenStatus.Waiting);
 
@@ -36,21 +37,20 @@ namespace CustomHome.Services
                     _context.ServiceTokens.Add(token);
                     _context.SaveChanges();
 
-                    result = QueueOperationResult.Success;
+                    response.Result = QueueOperationResult.Success;
+                    response.TokenNumber = token.TokenNumber;
                 }
             });
 
-            return result;
+            return response;;
         }
 
         public QueueOperationResult ServeNext()
         {
             var result = QueueOperationResult.NoWaitingCustomer;
 
-            ExecuteWithQueueLock(() =>
+            ExecuteWithQueueLock(settings =>
             {
-                var settings = _context.QueueSettings.First(); // though not using FOR UPDATE here, part of same transaction locked by FOR UPDATE queary in ExecuteWithQueueLock
-
                 var servingCount = _context.ServiceTokens
                     .Count(t => t.Status == ServiceTokenStatus.Serving);
 
@@ -81,7 +81,7 @@ namespace CustomHome.Services
         {
             var result = QueueOperationResult.TokenNotFound;
 
-            ExecuteWithQueueLock(() =>
+            ExecuteWithQueueLock(settings =>    // settings only used for locking here
             {
                 var token = _context.ServiceTokens
                     .FirstOrDefault(t =>
@@ -130,18 +130,18 @@ namespace CustomHome.Services
             return tokenNumber;
         }
 
-        private void ExecuteWithQueueLock(Action action)
+        private void ExecuteWithQueueLock(Action<QueueSettings> action)
         {
             using var transaction = _context.Database.BeginTransaction();
 
             try
             {
-                _context.QueueSettings
+                var settings = _context.QueueSettings
                     .FromSqlRaw(
                         "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE") // used for locking
                     .First();
 
-                action();
+                action(settings);
 
                 transaction.Commit();
             }

@@ -31,13 +31,13 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult GetToken()
     {
-        var result = _queueService.GetToken(); // Make GetToken return a boolean indicating whether a enum value
+        var response = _queueService.GetToken();
 
-        if (result == QueueOperationResult.Success)
+        if (response.Result == QueueOperationResult.Success)
         {
-            TempData["Message"] = "Token successfully created.";
+            TempData["Message"] = $"Your token number is {response.TokenNumber}.";
         }
-        else if (result == QueueOperationResult.QueueFull)
+        else if (response.Result == QueueOperationResult.QueueFull)
         {
             TempData["Message"] = "The waiting queue is currently full.";
         }
@@ -77,7 +77,7 @@ public class HomeController : Controller
         }
         else if (result == QueueOperationResult.TokenNotFound)
         {
-            TempData["Message"] = "The selected customer could not be found.";
+            TempData["Message"] = "The selected customer is no longer being served.";
         }
 
         return RedirectToAction("Index");
