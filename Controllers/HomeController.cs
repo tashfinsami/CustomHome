@@ -31,7 +31,16 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult GetToken()
     {
-        _queueService.GetToken();
+        var result = _queueService.GetToken(); // Make GetToken return a boolean indicating whether a enum value
+
+        if (result == QueueOperationResult.Success)
+        {
+            TempData["Message"] = "Token successfully created.";
+        }
+        else if (result == QueueOperationResult.QueueFull)
+        {
+            TempData["Message"] = "The waiting queue is currently full.";
+        }
         
         return RedirectToAction("Index");
     }
@@ -39,7 +48,20 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult ServeNext()
     {
-        _queueService.ServeNext();
+        var result = _queueService.ServeNext();
+
+        if (result == QueueOperationResult.Success)
+        {
+            TempData["Message"] = "Next customer is now being served.";
+        }
+        else if (result == QueueOperationResult.ServingCapacityFull)
+        {
+            TempData["Message"] = "All serving positions are currently occupied.";
+        }
+        else if (result == QueueOperationResult.NoWaitingCustomer)
+        {
+            TempData["Message"] = "There are no waiting customers.";
+        }
 
         return RedirectToAction("Index");
     }
@@ -47,7 +69,16 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult CompleteCurrent(int id)
     {
-        _queueService.Complete(id);
+        var result = _queueService.Complete(id);
+
+        if (result == QueueOperationResult.Success)
+        {
+            TempData["Message"] = "Customer has been marked as completed.";
+        }
+        else if (result == QueueOperationResult.TokenNotFound)
+        {
+            TempData["Message"] = "The selected customer could not be found.";
+        }
 
         return RedirectToAction("Index");
     }

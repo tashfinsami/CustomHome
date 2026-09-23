@@ -13,8 +13,10 @@ namespace CustomHome.Services
             _context = context;
         }
 
-        public void GetToken()
+        public QueueOperationResult GetToken()
         {
+            var result = QueueOperationResult.QueueFull;
+
             ExecuteWithQueueLock(() =>
             {
                 var settings = _context.QueueSettings.First(); // though not using FOR UPDATE here, part of same transaction locked by FOR UPDATE queary in ExecuteWithQueueLock
@@ -33,12 +35,18 @@ namespace CustomHome.Services
 
                     _context.ServiceTokens.Add(token);
                     _context.SaveChanges();
+
+                    result = QueueOperationResult.Success;
                 }
             });
+
+            return result;
         }
 
-        public void ServeNext()
+        public QueueOperationResult ServeNext()
         {
+            var result = QueueOperationResult.NoWaitingCustomer;
+
             ExecuteWithQueueLock(() =>
             {
                 var settings = _context.QueueSettings.First(); // though not using FOR UPDATE here, part of same transaction locked by FOR UPDATE queary in ExecuteWithQueueLock
@@ -46,24 +54,33 @@ namespace CustomHome.Services
                 var servingCount = _context.ServiceTokens
                     .Count(t => t.Status == ServiceTokenStatus.Serving);
 
-                if (servingCount < settings.MaxServing)
+                if (servingCount >= settings.MaxServing)
                 {
-                    var token = _context.ServiceTokens
-                        .Where(t => t.Status == ServiceTokenStatus.Waiting)
-                        .OrderBy(t => t.CreatedAt)
-                        .FirstOrDefault();
+                    result = QueueOperationResult.ServingCapacityFull;
+                    return;
+                }
 
-                    if (token != null)
-                    {
-                        token.Status = ServiceTokenStatus.Serving;
-                        _context.SaveChanges();
-                    }
+                var token = _context.ServiceTokens
+                    .Where(t => t.Status == ServiceTokenStatus.Waiting)
+                    .OrderBy(t => t.CreatedAt)
+                    .FirstOrDefault();
+
+                if (token != null)
+                {
+                    token.Status = ServiceTokenStatus.Serving;
+                    _context.SaveChanges();
+
+                    result = QueueOperationResult.Success;
                 }
             });
+
+            return result;
         }
 
-        public void Complete(int id)
+        public QueueOperationResult Complete(int id)
         {
+            var result = QueueOperationResult.TokenNotFound;
+
             ExecuteWithQueueLock(() =>
             {
                 var token = _context.ServiceTokens
@@ -75,8 +92,12 @@ namespace CustomHome.Services
                 {
                     token.Status = ServiceTokenStatus.Completed;
                     _context.SaveChanges();
+
+                    result = QueueOperationResult.Success;
                 }
             });
+
+            return result;
         }
 
         public List<ServiceToken> GetWaitingTokens() // reading operation, no need for transaction and locking
