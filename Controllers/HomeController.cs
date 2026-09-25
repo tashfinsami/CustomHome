@@ -14,10 +14,10 @@ public class HomeController : Controller
         _queueService = queueService;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        var waitingTokens = _queueService.GetWaitingTokens();
-        var servingTokens = _queueService.GetServingTokens();
+        var waitingTokens = await _queueService.GetWaitingTokens();
+        var servingTokens = await _queueService.GetServingTokens();
 
         var model = new HomeViewModel
         {
@@ -29,9 +29,9 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public IActionResult GetToken()
+    public async Task<IActionResult> GetToken()
     {
-        var response = _queueService.GetToken();
+        var response = await _queueService.GetToken();
 
         if (response.Result == QueueOperationResult.Success)
         {
@@ -46,9 +46,9 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public IActionResult ServeNext()
+    public async Task<IActionResult> ServeNext()
     {
-        var result = _queueService.ServeNext();
+        var result = await _queueService.ServeNext();
 
         if (result == QueueOperationResult.Success)
         {
@@ -67,9 +67,9 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public IActionResult CompleteCurrent(int id)
+    public async Task<IActionResult> CompleteCurrent(int id)
     {
-        var result = _queueService.Complete(id);
+        var result = await _queueService.Complete(id);
 
         if (result == QueueOperationResult.Success)
         {

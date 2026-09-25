@@ -13,29 +13,29 @@ namespace CustomHome.Services
             _context = context;
         }
 
-        public QueueOperationResponse GetToken()
+        public async Task<QueueOperationResponse> GetToken()
         {
             var response = new QueueOperationResponse
             {
                 Result = QueueOperationResult.QueueFull
             };
 
-            ExecuteWithQueueLock(settings =>
+            await ExecuteWithQueueLockAsync(async settings =>
             {
-                var waitingCount = _context.ServiceTokens
-                    .Count(t => t.Status == ServiceTokenStatus.Waiting);
+                var waitingCount = await _context.ServiceTokens
+                    .CountAsync(t => t.Status == ServiceTokenStatus.Waiting);
 
                 if (waitingCount < settings.MaxWaiting)
                 {
                     var token = new ServiceToken
                     {
-                        TokenNumber = GenerateUniqueTokenNumber(),
+                        TokenNumber = await GenerateUniqueTokenNumberAsync(),
                         Status = ServiceTokenStatus.Waiting,
                         CreatedAt = DateTime.Now
                     };
 
-                    _context.ServiceTokens.Add(token);
-                    _context.SaveChanges();
+                    _context.ServiceTokens.Add(token); // donot need await as it is C# internal operation, not a mysql operation
+                    await _context.SaveChangesAsync();
 
                     response.Result = QueueOperationResult.Success;
                     response.TokenNumber = token.TokenNumber;
@@ -45,14 +45,14 @@ namespace CustomHome.Services
             return response;;
         }
 
-        public QueueOperationResult ServeNext()
+        public async Task<QueueOperationResult> ServeNext()
         {
             var result = QueueOperationResult.NoWaitingCustomer;
 
-            ExecuteWithQueueLock(settings =>
+            await ExecuteWithQueueLockAsync(async settings =>
             {
-                var servingCount = _context.ServiceTokens
-                    .Count(t => t.Status == ServiceTokenStatus.Serving);
+                var servingCount = await _context.ServiceTokens
+                    .CountAsync(t => t.Status == ServiceTokenStatus.Serving);
 
                 if (servingCount >= settings.MaxServing)
                 {
@@ -60,15 +60,16 @@ namespace CustomHome.Services
                     return;
                 }
 
-                var token = _context.ServiceTokens
+                var token = await _context.ServiceTokens
                     .Where(t => t.Status == ServiceTokenStatus.Waiting)
                     .OrderBy(t => t.CreatedAt)
-                    .FirstOrDefault();
+                    .ThenBy(t => t.Id) // if two tokens have the same CreatedAt timestamp, order by Id to ensure consistent behavior
+                    .FirstOrDefaultAsync();
 
                 if (token != null)
                 {
-                    token.Status = ServiceTokenStatus.Serving;
-                    _context.SaveChanges();
+                    token.Status = ServiceTokenStatus.Serving; // donot need await as it is C# internal operation, not a mysql operation
+                    await _context.SaveChangesAsync();
 
                     result = QueueOperationResult.Success;
                 }
@@ -77,21 +78,21 @@ namespace CustomHome.Services
             return result;
         }
 
-        public QueueOperationResult Complete(int id)
+        public async Task<QueueOperationResult> Complete(int id)
         {
             var result = QueueOperationResult.TokenNotFound;
 
-            ExecuteWithQueueLock(settings =>    // settings only used for locking here
+            await ExecuteWithQueueLockAsync(async settings =>    // settings only used for locking here
             {
-                var token = _context.ServiceTokens
-                    .FirstOrDefault(t =>
+                var token = await _context.ServiceTokens
+                    .FirstOrDefaultAsync(t =>
                         t.Id == id &&
                         t.Status == ServiceTokenStatus.Serving);
 
                 if (token != null)
                 {
                     token.Status = ServiceTokenStatus.Completed;
-                    _context.SaveChanges();
+                    await _context.SaveChangesAsync();
 
                     result = QueueOperationResult.Success;
                 }
@@ -100,23 +101,25 @@ namespace CustomHome.Services
             return result;
         }
 
-        public List<ServiceToken> GetWaitingTokens() // reading operation, no need for transaction and locking
+        public async Task<List<ServiceToken>> GetWaitingTokens() // reading operation, no need for transaction and locking
         {
-            return _context.ServiceTokens
+            return await _context.ServiceTokens
                 .Where(t => t.Status == ServiceTokenStatus.Waiting)
                 .OrderBy(t => t.CreatedAt)
-                .ToList();
+                .ThenBy(t => t.Id) // if two tokens have the same CreatedAt timestamp, order by Id to ensure consistent behavior
+                .ToListAsync();
         }
 
-        public List<ServiceToken> GetServingTokens() // reading operation, no need for transaction and locking
+        public async Task<List<ServiceToken>> GetServingTokens() // reading operation, no need for transaction and locking
         {
-            return _context.ServiceTokens
+            return await _context.ServiceTokens
                 .Where(t => t.Status == ServiceTokenStatus.Serving)
                 .OrderBy(t => t.CreatedAt)
-                .ToList();
+                .ThenBy(t => t.Id) // if two tokens have the same CreatedAt timestamp, order by Id to ensure consistent behavior
+                .ToListAsync();
         }
 
-        private int GenerateUniqueTokenNumber() // generally not needed as 100000 - 999999 is a large range
+        private async Task<int> GenerateUniqueTokenNumberAsync() // generally not needed as 100000 - 999999 is a large range
         {
             int tokenNumber;
 
@@ -124,30 +127,32 @@ namespace CustomHome.Services
             {
                 tokenNumber = Random.Shared.Next(100000, 999999);
             }
-            while (_context.ServiceTokens
-                .Any(t => t.TokenNumber == tokenNumber));
+            while (await _context.ServiceTokens
+                .AnyAsync(t => t.TokenNumber == tokenNumber));
 
             return tokenNumber;
         }
 
-        private void ExecuteWithQueueLock(Action<QueueSettings> action)
+        private async Task ExecuteWithQueueLockAsync(
+            Func<QueueSettings, Task> action)
         {
-            using var transaction = _context.Database.BeginTransaction();
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
 
             try
             {
-                var settings = _context.QueueSettings
+                var settings = await _context.QueueSettings
                     .FromSqlRaw(
-                        "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE") // used for locking
-                    .First();
+                        "SELECT * FROM QueueSettings WHERE Id = 1 FOR UPDATE")
+                    .FirstAsync();
 
-                action(settings);
+                await action(settings);
 
-                transaction.Commit();
+                await transaction.CommitAsync();
             }
             catch
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
                 throw;
             }
         }
